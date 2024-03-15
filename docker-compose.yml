@@ -1,0 +1,28 @@
+version: '3.9'
+
+volumes:
+  ntopng_data:
+  clickhouse_data:
+  clickhouse_logs:
+
+services:
+  ntopng:
+    container_name: "ntopng"
+    image: ntop/ntopng:stable
+    command: ['-i', 'ens18', '-i', 'ens19', '-i', 'ens20', '-F', 'clickhouse', '--disable-login']
+    volumes:
+      - ntopng_data:/var/lib/ntopng
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - clickhouse
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    hostname: clickhouse
+    container_name: clickhouse
+    restart: always
+    network_mode: host
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
